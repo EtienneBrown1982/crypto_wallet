@@ -10,8 +10,8 @@
 import os
 import requests
 from dotenv import load_dotenv
-
 load_dotenv()
+
 from bip44 import Wallet
 from web3 import Account
 from web3 import middleware
@@ -33,7 +33,7 @@ def generate_account():
     private, public = wallet.derive_account("eth")
 
     # Convert private key into an Ethereum account
-    account = Account.privateKeyToAccount(private)
+    account = Account.from_key(private)
 
     return account
 
@@ -44,7 +44,7 @@ def get_balance(w3, address):
     wei_balance = w3.eth.get_balance(address)
 
     # Convert Wei value to ether
-    ether = w3.fromWei(wei_balance, "ether")
+    ether = w3.from_wei(wei_balance, "ether")
 
     # Return the value in ether
     return ether
@@ -56,7 +56,7 @@ def send_transaction(w3, account, to, wage):
     w3.eth.setGasPriceStrategy(medium_gas_price_strategy)
 
     # Convert eth amount to Wei
-    value = w3.toWei(wage, "ether")
+    value = w3.to_wei(wage, "ether")
 
     # Calculate gas estimate
     gasEstimate = w3.eth.estimateGas(
@@ -69,7 +69,7 @@ def send_transaction(w3, account, to, wage):
         "from": account.address,
         "value": value,
         "gas": gasEstimate,
-        "gasPrice": 0,
+        "gasPrice": 22000,
         "nonce": w3.eth.getTransactionCount(account.address),
     }
 
