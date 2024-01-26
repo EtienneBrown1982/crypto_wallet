@@ -13,13 +13,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from bip44 import Wallet
-from web3 import Account
+from web3 import Account, Web3
 from web3 import middleware
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 ################################################################################
 # Wallet functionality
 
+w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
 
 def generate_account():
     """Create a digital wallet and Ethereum account from a mnemonic seed phrase."""
@@ -30,7 +31,7 @@ def generate_account():
     wallet = Wallet(mnemonic)
 
     # Derive Ethereum Private Key
-    private, public = wallet.derive_account("eth")
+    private, public = wallet.derive_account("eth", address_index = 0)
 
     # Convert private key into an Ethereum account
     account = Account.from_key(private)
@@ -53,13 +54,12 @@ def get_balance(w3, address):
 def send_transaction(w3, account, to, wage):
     """Send an authorized transaction to the Ganache blockchain."""
     # Set gas price strategy
-    w3.eth.setGasPriceStrategy(medium_gas_price_strategy)
-
+    w3.eth.set_gas_price_strategy(medium_gas_price_strategy)
     # Convert eth amount to Wei
     value = w3.to_wei(wage, "ether")
 
     # Calculate gas estimate
-    gasEstimate = w3.eth.estimateGas(
+    gasEstimate = w3.eth.estimate_gas(
         {"to": to, "from": account.address, "value": value}
     )
 
@@ -69,12 +69,12 @@ def send_transaction(w3, account, to, wage):
         "from": account.address,
         "value": value,
         "gas": gasEstimate,
-        "gasPrice": 22000,
-        "nonce": w3.eth.getTransactionCount(account.address),
+        "gasPrice": 875000001,
+        "nonce": w3.eth.get_transaction_count(account.address),
     }
 
     # Sign the raw transaction with ethereum account
     signed_tx = account.signTransaction(raw_tx)
 
     # Send the signed transactions
-    return w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+    return w3.eth.send_raw_transaction(signed_tx.rawTransaction)
